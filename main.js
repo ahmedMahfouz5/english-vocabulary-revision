@@ -178,6 +178,10 @@ function searchIcon() {
 
 function getChosenVoice() {
   let elements = document.getElementById("selectVoice");
+  if (!elements) {
+    // If the select element doesn't exist, return a default voice index
+    return 0;
+  }
 
   elements.addEventListener("click", () => {
     voicesArr = [];
@@ -191,12 +195,11 @@ function getChosenVoice() {
     if (voicesArr.length > 1) {
       localStorage.setItem("voiceStorage", JSON.stringify(voicesArr));
     } else {
-      voicesArr = getLocalStorage("voiceStorage");
+      voicesArr = getLocalStorage("voiceStorage") || [];
     }
   });
-  voicesArr = getLocalStorage("voiceStorage");
-
-  if (elements.options.length !== voicesArr.length) {
+  voicesArr = getLocalStorage("voiceStorage") || []; // Ensure it's an array, default to empty
+  if (!elements.options || elements.options.length !== voicesArr.length) {
     while (elements.hasChildNodes()) {
       elements.removeChild(elements.firstChild);
     }
@@ -207,23 +210,16 @@ function getChosenVoice() {
       } else {
         opt = `<option value="${voicesArr[i].id}">${voicesArr[i].name}</option>`;
       }
-
-      /* 
-      let opt = document.createElement("option");
-      opt.value = voicesArr[i].id;
-      opt.innerText = voicesArr[i].name; */
-
       elements.insertAdjacentHTML("beforeend", opt);
     }
   }
-
   const selectedOption = elements.value;
-
   const voiceNumber = Number(selectedOption) || 0;
-  //console.log(voiceNumber);
-  let result = voicesArr[voiceNumber].id;
-  //console.log(result);
-  return result;
+  if (voicesArr && voicesArr[voiceNumber]) {
+    let result = voicesArr[voiceNumber].id || 0;
+    return result;
+  }
+  return 0; // Default fallback
 }
 
 let voices = [];
@@ -245,7 +241,7 @@ function readWord(word, chosenVoice) {
       waitingFlag = 0;
     };
 
-    const voiceSelected = voices[getChosenVoice()] || voices[0];
+    const voiceSelected = voices[1] || voices[0];
     msg.volume = 1; // From 0 to 1
     msg.rate = 1; // From 0.1 to 10
     msg.pitch = 1; // From 0 to 2
